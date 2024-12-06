@@ -1,0 +1,65 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Github-Account-39021832/Roblox/main/Games%20Unite%20Testing%20Place/Silent%20Aim.lua"))()
+
+-- Script to apply chams effect with a green outline on all players' characters
+local function createChamOutline(character)
+    -- Check if character exists and if it has a humanoid
+    if not character or not character:FindFirstChild("Humanoid") then return end
+
+    -- Create a model to hold the outline parts
+    local outlineModel = Instance.new("Model")
+    outlineModel.Name = character.Name .. "_Outline"
+    outlineModel.Parent = game.Workspace
+
+    -- Iterate through the character's parts and create outline parts for each one
+    for _, part in ipairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            -- Clone the part to create a transparent outline
+            local outlinePart = part:Clone()
+            outlinePart.Parent = outlineModel
+
+            -- Set outline part properties to green color
+            outlinePart.Color = Color3.fromRGB(0, 255, 0)  -- Green outline color
+            outlinePart.Transparency = 0.5  -- Set transparency (lower = less transparent)
+            outlinePart.Anchored = true
+            outlinePart.CanCollide = false
+            outlinePart.Size = part.Size * 1.05  -- Slightly larger than the original part
+            outlinePart.CFrame = part.CFrame
+
+            -- Add a glowing effect (optional)
+            local glow = Instance.new("SurfaceGui")
+            glow.Adornee = outlinePart
+            glow.Face = Enum.NormalId.Front
+            glow.Parent = outlinePart
+
+            local frame = Instance.new("Frame")
+            frame.Size = UDim2.new(1, 0, 1, 0)
+            frame.BackgroundTransparency = 0.6
+            frame.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green glowing color
+            frame.Parent = glow
+        end
+    end
+end
+
+-- Function to remove the outline
+local function removeChamOutline(character)
+    local outlineModel = game.Workspace:FindFirstChild(character.Name .. "_Outline")
+    if outlineModel then
+        outlineModel:Destroy()
+    end
+end
+
+-- Detect when a player spawns or dies
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        -- Wait for the character to fully load
+        character:WaitForChild("Humanoid")
+        
+        -- Create cham outline for the character
+        createChamOutline(character)
+
+        -- Clean up the outline when the player dies or resets
+        character:WaitForChild("Humanoid").Died:Connect(function()
+            removeChamOutline(character)
+        end)
+    end)
+end)
